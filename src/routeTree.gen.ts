@@ -10,33 +10,108 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as JourneyRouteImport } from './routes/_journey'
+import { Route as JourneyDetailsRouteImport } from './routes/_journey.details'
+import { Route as JourneyFieldRouteImport } from './routes/_journey.field'
+import { Route as ApiFieldsRouteImport } from './routes/api/fields'
+import { Route as ApiStrategiesRouteImport } from './routes/api/strategies'
+import { Route as ApiFieldsFieldIdFeaturesRouteImport } from './routes/api/fields.$fieldId.features'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const JourneyRoute = JourneyRouteImport.update({
+  id: '/_journey',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const JourneyDetailsRoute = JourneyDetailsRouteImport.update({
+  id: '/details',
+  path: '/details',
+  getParentRoute: () => JourneyRoute,
+} as any)
+const JourneyFieldRoute = JourneyFieldRouteImport.update({
+  id: '/field',
+  path: '/field',
+  getParentRoute: () => JourneyRoute,
+} as any)
+const ApiFieldsRoute = ApiFieldsRouteImport.update({
+  id: '/api/fields',
+  path: '/api/fields',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiStrategiesRoute = ApiStrategiesRouteImport.update({
+  id: '/api/strategies',
+  path: '/api/strategies',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiFieldsFieldIdFeaturesRoute =
+  ApiFieldsFieldIdFeaturesRouteImport.update({
+    id: '/$fieldId/features',
+    path: '/$fieldId/features',
+    getParentRoute: () => ApiFieldsRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/details': typeof JourneyDetailsRoute
+  '/field': typeof JourneyFieldRoute
+  '/api/fields': typeof ApiFieldsRouteWithChildren
+  '/api/strategies': typeof ApiStrategiesRoute
+  '/api/fields/$fieldId/features': typeof ApiFieldsFieldIdFeaturesRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/details': typeof JourneyDetailsRoute
+  '/field': typeof JourneyFieldRoute
+  '/api/fields': typeof ApiFieldsRouteWithChildren
+  '/api/strategies': typeof ApiStrategiesRoute
+  '/api/fields/$fieldId/features': typeof ApiFieldsFieldIdFeaturesRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_journey': typeof JourneyRouteWithChildren
+  '/_journey/details': typeof JourneyDetailsRoute
+  '/_journey/field': typeof JourneyFieldRoute
+  '/api/fields': typeof ApiFieldsRouteWithChildren
+  '/api/strategies': typeof ApiStrategiesRoute
+  '/api/fields/$fieldId/features': typeof ApiFieldsFieldIdFeaturesRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/details'
+    | '/field'
+    | '/api/fields'
+    | '/api/strategies'
+    | '/api/fields/$fieldId/features'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/details'
+    | '/field'
+    | '/api/fields'
+    | '/api/strategies'
+    | '/api/fields/$fieldId/features'
+  id:
+    | '__root__'
+    | '/'
+    | '/_journey'
+    | '/_journey/details'
+    | '/_journey/field'
+    | '/api/fields'
+    | '/api/strategies'
+    | '/api/fields/$fieldId/features'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  JourneyRoute: typeof JourneyRouteWithChildren
+  ApiFieldsRoute: typeof ApiFieldsRouteWithChildren
+  ApiStrategiesRoute: typeof ApiStrategiesRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +123,81 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_journey': {
+      id: '/_journey'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof JourneyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_journey/details': {
+      id: '/_journey/details'
+      path: '/details'
+      fullPath: '/details'
+      preLoaderRoute: typeof JourneyDetailsRouteImport
+      parentRoute: typeof JourneyRoute
+    }
+    '/_journey/field': {
+      id: '/_journey/field'
+      path: '/field'
+      fullPath: '/field'
+      preLoaderRoute: typeof JourneyFieldRouteImport
+      parentRoute: typeof JourneyRoute
+    }
+    '/api/fields': {
+      id: '/api/fields'
+      path: '/api/fields'
+      fullPath: '/api/fields'
+      preLoaderRoute: typeof ApiFieldsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/strategies': {
+      id: '/api/strategies'
+      path: '/api/strategies'
+      fullPath: '/api/strategies'
+      preLoaderRoute: typeof ApiStrategiesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/fields/$fieldId/features': {
+      id: '/api/fields/$fieldId/features'
+      path: '/$fieldId/features'
+      fullPath: '/api/fields/$fieldId/features'
+      preLoaderRoute: typeof ApiFieldsFieldIdFeaturesRouteImport
+      parentRoute: typeof ApiFieldsRoute
+    }
   }
 }
 
+interface JourneyRouteChildren {
+  JourneyDetailsRoute: typeof JourneyDetailsRoute
+  JourneyFieldRoute: typeof JourneyFieldRoute
+}
+
+const JourneyRouteChildren: JourneyRouteChildren = {
+  JourneyDetailsRoute: JourneyDetailsRoute,
+  JourneyFieldRoute: JourneyFieldRoute,
+}
+
+const JourneyRouteWithChildren =
+  JourneyRoute._addFileChildren(JourneyRouteChildren)
+
+interface ApiFieldsRouteChildren {
+  ApiFieldsFieldIdFeaturesRoute: typeof ApiFieldsFieldIdFeaturesRoute
+}
+
+const ApiFieldsRouteChildren: ApiFieldsRouteChildren = {
+  ApiFieldsFieldIdFeaturesRoute: ApiFieldsFieldIdFeaturesRoute,
+}
+
+const ApiFieldsRouteWithChildren = ApiFieldsRoute._addFileChildren(
+  ApiFieldsRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  JourneyRoute: JourneyRouteWithChildren,
+  ApiFieldsRoute: ApiFieldsRouteWithChildren,
+  ApiStrategiesRoute: ApiStrategiesRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
