@@ -30,7 +30,7 @@ export const Route = createFileRoute("/")({
   component: Landing,
 });
 
-export const LANDING_MESSAGE =
+const LANDING_MESSAGE =
   "Satellite data helps us describe the conditions around a field, not measure inside it. This tool compares rotation options and shows where the evidence runs out.";
 
 const FEATURES = [
