@@ -10,33 +10,69 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ApiFieldsRouteImport } from './routes/api/fields'
+import { Route as ApiStrategiesRouteImport } from './routes/api/strategies'
+import { Route as ApiFieldsFieldIdFeaturesRouteImport } from './routes/api/fields.$fieldId.features'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiFieldsRoute = ApiFieldsRouteImport.update({
+  id: '/api/fields',
+  path: '/api/fields',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiStrategiesRoute = ApiStrategiesRouteImport.update({
+  id: '/api/strategies',
+  path: '/api/strategies',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiFieldsFieldIdFeaturesRoute =
+  ApiFieldsFieldIdFeaturesRouteImport.update({
+    id: '/$fieldId/features',
+    path: '/$fieldId/features',
+    getParentRoute: () => ApiFieldsRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/api/fields': typeof ApiFieldsRouteWithChildren
+  '/api/strategies': typeof ApiStrategiesRoute
+  '/api/fields/$fieldId/features': typeof ApiFieldsFieldIdFeaturesRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/api/fields': typeof ApiFieldsRouteWithChildren
+  '/api/strategies': typeof ApiStrategiesRoute
+  '/api/fields/$fieldId/features': typeof ApiFieldsFieldIdFeaturesRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/api/fields': typeof ApiFieldsRouteWithChildren
+  '/api/strategies': typeof ApiStrategiesRoute
+  '/api/fields/$fieldId/features': typeof ApiFieldsFieldIdFeaturesRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    '/' | '/api/fields' | '/api/strategies' | '/api/fields/$fieldId/features'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/api/fields' | '/api/strategies' | '/api/fields/$fieldId/features'
+  id:
+    | '__root__'
+    | '/'
+    | '/api/fields'
+    | '/api/strategies'
+    | '/api/fields/$fieldId/features'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ApiFieldsRoute: typeof ApiFieldsRouteWithChildren
+  ApiStrategiesRoute: typeof ApiStrategiesRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +84,46 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/fields': {
+      id: '/api/fields'
+      path: '/api/fields'
+      fullPath: '/api/fields'
+      preLoaderRoute: typeof ApiFieldsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/strategies': {
+      id: '/api/strategies'
+      path: '/api/strategies'
+      fullPath: '/api/strategies'
+      preLoaderRoute: typeof ApiStrategiesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/fields/$fieldId/features': {
+      id: '/api/fields/$fieldId/features'
+      path: '/$fieldId/features'
+      fullPath: '/api/fields/$fieldId/features'
+      preLoaderRoute: typeof ApiFieldsFieldIdFeaturesRouteImport
+      parentRoute: typeof ApiFieldsRoute
+    }
   }
 }
 
+interface ApiFieldsRouteChildren {
+  ApiFieldsFieldIdFeaturesRoute: typeof ApiFieldsFieldIdFeaturesRoute
+}
+
+const ApiFieldsRouteChildren: ApiFieldsRouteChildren = {
+  ApiFieldsFieldIdFeaturesRoute: ApiFieldsFieldIdFeaturesRoute,
+}
+
+const ApiFieldsRouteWithChildren = ApiFieldsRoute._addFileChildren(
+  ApiFieldsRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ApiFieldsRoute: ApiFieldsRouteWithChildren,
+  ApiStrategiesRoute: ApiStrategiesRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
