@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as JourneyRouteImport } from './routes/_journey'
+import { Route as JourneyAnalysingRouteImport } from './routes/_journey.analysing'
 import { Route as JourneyDetailsRouteImport } from './routes/_journey.details'
 import { Route as JourneyFieldRouteImport } from './routes/_journey.field'
 import { Route as JourneyPrioritiesRouteImport } from './routes/_journey.priorities'
@@ -26,6 +27,11 @@ const IndexRoute = IndexRouteImport.update({
 const JourneyRoute = JourneyRouteImport.update({
   id: '/_journey',
   getParentRoute: () => rootRouteImport,
+} as any)
+const JourneyAnalysingRoute = JourneyAnalysingRouteImport.update({
+  id: '/analysing',
+  path: '/analysing',
+  getParentRoute: () => JourneyRoute,
 } as any)
 const JourneyDetailsRoute = JourneyDetailsRouteImport.update({
   id: '/details',
@@ -61,6 +67,7 @@ const ApiFieldsFieldIdFeaturesRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/analysing': typeof JourneyAnalysingRoute
   '/details': typeof JourneyDetailsRoute
   '/field': typeof JourneyFieldRoute
   '/priorities': typeof JourneyPrioritiesRoute
@@ -70,6 +77,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/analysing': typeof JourneyAnalysingRoute
   '/details': typeof JourneyDetailsRoute
   '/field': typeof JourneyFieldRoute
   '/priorities': typeof JourneyPrioritiesRoute
@@ -81,6 +89,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_journey': typeof JourneyRouteWithChildren
+  '/_journey/analysing': typeof JourneyAnalysingRoute
   '/_journey/details': typeof JourneyDetailsRoute
   '/_journey/field': typeof JourneyFieldRoute
   '/_journey/priorities': typeof JourneyPrioritiesRoute
@@ -92,6 +101,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/analysing'
     | '/details'
     | '/field'
     | '/priorities'
@@ -101,6 +111,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/analysing'
     | '/details'
     | '/field'
     | '/priorities'
@@ -111,6 +122,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/_journey'
+    | '/_journey/analysing'
     | '/_journey/details'
     | '/_journey/field'
     | '/_journey/priorities'
@@ -141,6 +153,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof JourneyRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_journey/analysing': {
+      id: '/_journey/analysing'
+      path: '/analysing'
+      fullPath: '/analysing'
+      preLoaderRoute: typeof JourneyAnalysingRouteImport
+      parentRoute: typeof JourneyRoute
     }
     '/_journey/details': {
       id: '/_journey/details'
@@ -188,12 +207,14 @@ declare module '@tanstack/react-router' {
 }
 
 interface JourneyRouteChildren {
+  JourneyAnalysingRoute: typeof JourneyAnalysingRoute
   JourneyDetailsRoute: typeof JourneyDetailsRoute
   JourneyFieldRoute: typeof JourneyFieldRoute
   JourneyPrioritiesRoute: typeof JourneyPrioritiesRoute
 }
 
 const JourneyRouteChildren: JourneyRouteChildren = {
+  JourneyAnalysingRoute: JourneyAnalysingRoute,
   JourneyDetailsRoute: JourneyDetailsRoute,
   JourneyFieldRoute: JourneyFieldRoute,
   JourneyPrioritiesRoute: JourneyPrioritiesRoute,
