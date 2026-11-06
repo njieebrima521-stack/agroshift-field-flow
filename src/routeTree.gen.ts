@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as JourneyRouteImport } from './routes/_journey'
 import { Route as JourneyAnalysingRouteImport } from './routes/_journey.analysing'
+import { Route as JourneyCompareRouteImport } from './routes/_journey.compare'
 import { Route as JourneyDetailsRouteImport } from './routes/_journey.details'
 import { Route as JourneyEvidenceRouteImport } from './routes/_journey.evidence'
 import { Route as JourneyFieldRouteImport } from './routes/_journey.field'
@@ -34,6 +35,11 @@ const JourneyRoute = JourneyRouteImport.update({
 const JourneyAnalysingRoute = JourneyAnalysingRouteImport.update({
   id: '/analysing',
   path: '/analysing',
+  getParentRoute: () => JourneyRoute,
+} as any)
+const JourneyCompareRoute = JourneyCompareRouteImport.update({
+  id: '/compare',
+  path: '/compare',
   getParentRoute: () => JourneyRoute,
 } as any)
 const JourneyDetailsRoute = JourneyDetailsRouteImport.update({
@@ -87,6 +93,7 @@ const ApiFieldsFieldIdFeaturesRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/analysing': typeof JourneyAnalysingRoute
+  '/compare': typeof JourneyCompareRoute
   '/details': typeof JourneyDetailsRoute
   '/evidence': typeof JourneyEvidenceRoute
   '/field': typeof JourneyFieldRoute
@@ -100,6 +107,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/analysing': typeof JourneyAnalysingRoute
+  '/compare': typeof JourneyCompareRoute
   '/details': typeof JourneyDetailsRoute
   '/evidence': typeof JourneyEvidenceRoute
   '/field': typeof JourneyFieldRoute
@@ -115,6 +123,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_journey': typeof JourneyRouteWithChildren
   '/_journey/analysing': typeof JourneyAnalysingRoute
+  '/_journey/compare': typeof JourneyCompareRoute
   '/_journey/details': typeof JourneyDetailsRoute
   '/_journey/evidence': typeof JourneyEvidenceRoute
   '/_journey/field': typeof JourneyFieldRoute
@@ -130,6 +139,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/analysing'
+    | '/compare'
     | '/details'
     | '/evidence'
     | '/field'
@@ -143,6 +153,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/analysing'
+    | '/compare'
     | '/details'
     | '/evidence'
     | '/field'
@@ -157,6 +168,7 @@ export interface FileRouteTypes {
     | '/'
     | '/_journey'
     | '/_journey/analysing'
+    | '/_journey/compare'
     | '/_journey/details'
     | '/_journey/evidence'
     | '/_journey/field'
@@ -196,6 +208,13 @@ declare module '@tanstack/react-router' {
       path: '/analysing'
       fullPath: '/analysing'
       preLoaderRoute: typeof JourneyAnalysingRouteImport
+      parentRoute: typeof JourneyRoute
+    }
+    '/_journey/compare': {
+      id: '/_journey/compare'
+      path: '/compare'
+      fullPath: '/compare'
+      preLoaderRoute: typeof JourneyCompareRouteImport
       parentRoute: typeof JourneyRoute
     }
     '/_journey/details': {
@@ -266,6 +285,7 @@ declare module '@tanstack/react-router' {
 
 interface JourneyRouteChildren {
   JourneyAnalysingRoute: typeof JourneyAnalysingRoute
+  JourneyCompareRoute: typeof JourneyCompareRoute
   JourneyDetailsRoute: typeof JourneyDetailsRoute
   JourneyEvidenceRoute: typeof JourneyEvidenceRoute
   JourneyFieldRoute: typeof JourneyFieldRoute
@@ -276,6 +296,7 @@ interface JourneyRouteChildren {
 
 const JourneyRouteChildren: JourneyRouteChildren = {
   JourneyAnalysingRoute: JourneyAnalysingRoute,
+  JourneyCompareRoute: JourneyCompareRoute,
   JourneyDetailsRoute: JourneyDetailsRoute,
   JourneyEvidenceRoute: JourneyEvidenceRoute,
   JourneyFieldRoute: JourneyFieldRoute,
