@@ -19,6 +19,7 @@ import { Route as JourneyOptionsRouteImport } from './routes/_journey.options'
 import { Route as JourneyPrioritiesRouteImport } from './routes/_journey.priorities'
 import { Route as ApiFieldsRouteImport } from './routes/api/fields'
 import { Route as ApiStrategiesRouteImport } from './routes/api/strategies'
+import { Route as JourneyStrategyStrategyIdRouteImport } from './routes/_journey.strategy.$strategyId'
 import { Route as ApiFieldsFieldIdFeaturesRouteImport } from './routes/api/fields.$fieldId.features'
 
 const IndexRoute = IndexRouteImport.update({
@@ -70,6 +71,12 @@ const ApiStrategiesRoute = ApiStrategiesRouteImport.update({
   path: '/api/strategies',
   getParentRoute: () => rootRouteImport,
 } as any)
+const JourneyStrategyStrategyIdRoute =
+  JourneyStrategyStrategyIdRouteImport.update({
+    id: '/strategy/$strategyId',
+    path: '/strategy/$strategyId',
+    getParentRoute: () => JourneyRoute,
+  } as any)
 const ApiFieldsFieldIdFeaturesRoute =
   ApiFieldsFieldIdFeaturesRouteImport.update({
     id: '/$fieldId/features',
@@ -87,6 +94,7 @@ export interface FileRoutesByFullPath {
   '/priorities': typeof JourneyPrioritiesRoute
   '/api/fields': typeof ApiFieldsRouteWithChildren
   '/api/strategies': typeof ApiStrategiesRoute
+  '/strategy/$strategyId': typeof JourneyStrategyStrategyIdRoute
   '/api/fields/$fieldId/features': typeof ApiFieldsFieldIdFeaturesRoute
 }
 export interface FileRoutesByTo {
@@ -99,6 +107,7 @@ export interface FileRoutesByTo {
   '/priorities': typeof JourneyPrioritiesRoute
   '/api/fields': typeof ApiFieldsRouteWithChildren
   '/api/strategies': typeof ApiStrategiesRoute
+  '/strategy/$strategyId': typeof JourneyStrategyStrategyIdRoute
   '/api/fields/$fieldId/features': typeof ApiFieldsFieldIdFeaturesRoute
 }
 export interface FileRoutesById {
@@ -113,6 +122,7 @@ export interface FileRoutesById {
   '/_journey/priorities': typeof JourneyPrioritiesRoute
   '/api/fields': typeof ApiFieldsRouteWithChildren
   '/api/strategies': typeof ApiStrategiesRoute
+  '/_journey/strategy/$strategyId': typeof JourneyStrategyStrategyIdRoute
   '/api/fields/$fieldId/features': typeof ApiFieldsFieldIdFeaturesRoute
 }
 export interface FileRouteTypes {
@@ -127,6 +137,7 @@ export interface FileRouteTypes {
     | '/priorities'
     | '/api/fields'
     | '/api/strategies'
+    | '/strategy/$strategyId'
     | '/api/fields/$fieldId/features'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -139,6 +150,7 @@ export interface FileRouteTypes {
     | '/priorities'
     | '/api/fields'
     | '/api/strategies'
+    | '/strategy/$strategyId'
     | '/api/fields/$fieldId/features'
   id:
     | '__root__'
@@ -152,6 +164,7 @@ export interface FileRouteTypes {
     | '/_journey/priorities'
     | '/api/fields'
     | '/api/strategies'
+    | '/_journey/strategy/$strategyId'
     | '/api/fields/$fieldId/features'
   fileRoutesById: FileRoutesById
 }
@@ -234,6 +247,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiStrategiesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_journey/strategy/$strategyId': {
+      id: '/_journey/strategy/$strategyId'
+      path: '/strategy/$strategyId'
+      fullPath: '/strategy/$strategyId'
+      preLoaderRoute: typeof JourneyStrategyStrategyIdRouteImport
+      parentRoute: typeof JourneyRoute
+    }
     '/api/fields/$fieldId/features': {
       id: '/api/fields/$fieldId/features'
       path: '/$fieldId/features'
@@ -251,6 +271,7 @@ interface JourneyRouteChildren {
   JourneyFieldRoute: typeof JourneyFieldRoute
   JourneyOptionsRoute: typeof JourneyOptionsRoute
   JourneyPrioritiesRoute: typeof JourneyPrioritiesRoute
+  JourneyStrategyStrategyIdRoute: typeof JourneyStrategyStrategyIdRoute
 }
 
 const JourneyRouteChildren: JourneyRouteChildren = {
@@ -260,6 +281,7 @@ const JourneyRouteChildren: JourneyRouteChildren = {
   JourneyFieldRoute: JourneyFieldRoute,
   JourneyOptionsRoute: JourneyOptionsRoute,
   JourneyPrioritiesRoute: JourneyPrioritiesRoute,
+  JourneyStrategyStrategyIdRoute: JourneyStrategyStrategyIdRoute,
 }
 
 const JourneyRouteWithChildren =
