@@ -105,7 +105,7 @@ export default function FieldMap(props: FieldMapProps) {
     if (!fittedRef.current && bounds.isValid()) {
       const sel = props.fields.find((f) => f.field.field_id === props.selectedId);
       if (sel?.parsed.ok) {
-        const b = L.latLngBounds(sel.parsed.polygons.flatMap((r) => r[0].map(([lng, lat]) => [lat, lng] as L.LatLngTuple)));
+        const b = L.latLngBounds(sel.parsed.polygons.flatMap((r) => (r[0] ?? []).map(([lng, lat]) => [lat, lng] as L.LatLngTuple)));
         map.fitBounds(b, { maxZoom: 17, padding: [40, 40] });
       } else {
         map.fitBounds(bounds, { maxZoom: 15, padding: [30, 30] });
