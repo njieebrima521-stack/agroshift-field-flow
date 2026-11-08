@@ -124,7 +124,7 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <SessionProvider>
         <Outlet />
-        <Toaster position="top-center" />
+        <Toaster position="top-center" className="toaster group no-print" />
       </SessionProvider>
     </QueryClientProvider>
   );

@@ -28,7 +28,7 @@ export function ProvenanceTag({ provenance, className }: { provenance: Provenanc
           modelled ? "border-highlight/50 text-highlight-text" : "border-primary/40 text-primary-strong",
         )}
       >
-        {modelled ? `Modelled (${provenance.type})` : "Observed"}
+        {modelled ? (provenance.type.toLowerCase() === "modelled" ? "Modelled" : `Modelled (${provenance.type})`) : "Observed"}
       </span>
     </div>
   );

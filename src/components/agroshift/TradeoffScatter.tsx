@@ -46,7 +46,7 @@ export function TradeoffScatter({ items }: { items: LabelledStrategy[] }) {
   const [y0, y1] = pad(Math.min(...ys), Math.max(...ys));
   const W = 420;
   const H = 300;
-  const L = 56;
+  const L = 72;
   const B = 50;
   const T = 16;
   const R = 16;
@@ -81,13 +81,20 @@ export function TradeoffScatter({ items }: { items: LabelledStrategy[] }) {
         <text x={(L + W - R) / 2} y={H - 6} textAnchor="middle" className="fill-foreground" fontSize={14} fontWeight={600}>
           Seasonal water demand →
         </text>
-        <text x={14} y={(T + H - B) / 2} textAnchor="middle" transform={`rotate(-90 14 ${(T + H - B) / 2})`} className="fill-foreground" fontSize={14} fontWeight={600}>
+        <text x={16} y={(T + H - B) / 2} textAnchor="middle" transform={`rotate(-90 16 ${(T + H - B) / 2})`} className="fill-foreground" fontSize={14} fontWeight={600}>
           Soil-health score →
         </text>
         {points.map((p) => (
           <g key={p.item.strategy.id}>
             {shape(p)}
-            <text x={sx(p.x) + 12} y={sy(p.y) - 10} className="fill-foreground" fontSize={14} fontWeight={700}>
+            <text
+              x={sx(p.x) > W * 0.6 ? sx(p.x) - 12 : sx(p.x) + 12}
+              y={sy(p.y) - 12}
+              textAnchor={sx(p.x) > W * 0.6 ? "end" : "start"}
+              className="fill-foreground"
+              fontSize={14}
+              fontWeight={700}
+            >
               {p.item.short === "Current" ? "Current" : `Option ${p.item.short}`}
             </text>
           </g>

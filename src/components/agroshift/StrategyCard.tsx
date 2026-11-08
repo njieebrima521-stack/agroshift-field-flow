@@ -88,7 +88,7 @@ export function StrategyCard({ item, zeroBased }: { item: LabelledStrategy; zero
           ))}
         </ol>
 
-        <SequenceBar sequence={s.sequence} zeroBased={zeroBased} showLegend={false} />
+        <SequenceBar sequence={s.sequence} zeroBased={zeroBased} showLegend={false} compact />
 
         <div className="flex flex-wrap items-center gap-2">
           {s.score !== null && (
