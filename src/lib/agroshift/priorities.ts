@@ -25,8 +25,8 @@ export function normalisePriorities(p: Priorities): Priorities | null {
     .sort((a, b) => b.rem - a.rem || a.i - b.i);
   for (const { i } of order) {
     if (remaining <= 0) break;
-    floors[i] += 1;
+    floors[i] = (floors[i] ?? 0) + 1;
     remaining -= 1;
   }
-  return Object.fromEntries(PRIORITY_KEYS.map((k, i) => [k, floors[i]])) as Priorities;
+  return Object.fromEntries(PRIORITY_KEYS.map((k, i) => [k, floors[i] ?? 0])) as Priorities;
 }

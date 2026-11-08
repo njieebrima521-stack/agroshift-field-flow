@@ -8,7 +8,7 @@ export async function searchPlaces(query: string, signal?: AbortSignal): Promise
   const q = query.trim().slice(0, 120);
   if (!q) return [];
   const url = `https://nominatim.openstreetmap.org/search?format=json&limit=5&countrycodes=gm&q=${encodeURIComponent(q)}`;
-  const res = await fetch(url, { signal, headers: { Accept: "application/json" } });
+  const res = await fetch(url, { signal: signal ?? null, headers: { Accept: "application/json" } });
   if (!res.ok) throw new Error(`Search service returned HTTP ${res.status}`);
   const data = (await res.json()) as Array<{ display_name?: string; lat?: string; lon?: string }>;
   return data

@@ -15,7 +15,7 @@ const PATTERNS = [
 export function cropPatternClass(crop: string): string {
   let h = 0;
   for (const ch of crop.trim().toLowerCase()) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
-  return PATTERNS[h % PATTERNS.length];
+  return PATTERNS[h % PATTERNS.length] ?? "crop-pattern-1";
 }
 
 type Placed = { item: SequenceItem; start: number; end: number; lane: number };
@@ -36,7 +36,7 @@ function layout(sequence: SequenceItem[], zeroBased: boolean) {
         lanes.push([]);
         lane = lanes.length - 1;
       }
-      lanes[lane].push([seg.start, seg.end]);
+      lanes[lane]!.push([seg.start, seg.end]);
       placed.push({ item, start: seg.start, end: seg.end, lane });
     }
   }

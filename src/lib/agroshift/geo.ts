@@ -60,8 +60,8 @@ export function ringAreaM2(ring: Ring): number {
   if (n < 3) return 0;
   let total = 0;
   for (let i = 0; i < n; i++) {
-    const [lng1, lat1] = ring[i];
-    const [lng2, lat2] = ring[(i + 1) % n];
+    const [lng1, lat1] = ring[i]!;
+    const [lng2, lat2] = ring[(i + 1) % n]!;
     total += rad(lng2 - lng1) * (2 + Math.sin(rad(lat1)) + Math.sin(rad(lat2)));
   }
   return Math.abs((total * EARTH_RADIUS_M * EARTH_RADIUS_M) / 2);
@@ -70,6 +70,7 @@ export function ringAreaM2(ring: Ring): number {
 export function polygonsAreaHa(polygons: PolygonRings[]): number {
   let m2 = 0;
   for (const [outer, ...holes] of polygons) {
+    if (!outer) continue;
     m2 += ringAreaM2(outer);
     for (const h of holes) m2 -= ringAreaM2(h);
   }
@@ -79,8 +80,8 @@ export function polygonsAreaHa(polygons: PolygonRings[]): number {
 function pointInRing([x, y]: LngLat, ring: Ring): boolean {
   let inside = false;
   for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
-    const [xi, yi] = ring[i];
-    const [xj, yj] = ring[j];
+    const [xi, yi] = ring[i]!;
+    const [xj, yj] = ring[j]!;
     if (yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) inside = !inside;
   }
   return inside;
@@ -88,22 +89,24 @@ function pointInRing([x, y]: LngLat, ring: Ring): boolean {
 
 export function pointInPolygons(point: LngLat, polygons: PolygonRings[]): boolean {
   return polygons.some(
-    ([outer, ...holes]) => pointInRing(point, outer) && !holes.some((h) => pointInRing(point, h)),
+    ([outer, ...holes]) => outer !== undefined && pointInRing(point, outer) && !holes.some((h) => pointInRing(point, h)),
   );
 }
 
 export function ringCentroid(ring: Ring): LngLat {
-  const pts = ring.length > 1 && ring[0][0] === ring.at(-1)![0] && ring[0][1] === ring.at(-1)![1]
-    ? ring.slice(0, -1)
-    : ring;
-  const sum = pts.reduce((acc, p) => [acc[0] + p[0], acc[1] + p[1]], [0, 0]);
+  const first = ring[0];
+  const last = ring[ring.length - 1];
+  const closed = ring.length > 1 && first && last && first[0] === last[0] && first[1] === last[1];
+  const pts = closed ? ring.slice(0, -1) : ring;
+  if (pts.length === 0) return [0, 0];
+  const sum = pts.reduce<LngLat>((acc, p) => [acc[0] + p[0], acc[1] + p[1]], [0, 0]);
   return [sum[0] / pts.length, sum[1] / pts.length];
 }
 
 export function closeRing(points: LngLat[]): Ring {
-  if (points.length === 0) return [];
   const first = points[0];
   const last = points[points.length - 1];
+  if (!first || !last) return [];
   return first[0] === last[0] && first[1] === last[1] ? points : [...points, first];
 }
 

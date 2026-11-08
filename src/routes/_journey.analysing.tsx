@@ -28,7 +28,7 @@ export const Route = createFileRoute("/_journey/analysing")({
 
 type StageId = "field" | "features" | "soil" | "inputs" | "strategies";
 type Status = "pending" | "running" | "done" | "partial" | "error";
-type Stage = { id: StageId; title: string; running: string; status: Status; note?: string };
+type Stage = { id: StageId; title: string; running: string; status: Status; note?: string | undefined };
 
 const INITIAL: Stage[] = [
   { id: "field", title: "Field information", running: "Confirming your field with the AgroShift service…", status: "pending" },

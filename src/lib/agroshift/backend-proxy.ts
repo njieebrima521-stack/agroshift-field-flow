@@ -26,7 +26,7 @@ export async function forwardToBackend(request: Request, path: string): Promise<
     upstream = await fetch(`${base}${path}`, {
       method: request.method,
       headers,
-      body: request.method === "GET" || request.method === "HEAD" ? undefined : await request.text(),
+      body: request.method === "GET" || request.method === "HEAD" ? null : await request.text(),
       signal: AbortSignal.timeout(85_000),
     });
   } catch (err) {
