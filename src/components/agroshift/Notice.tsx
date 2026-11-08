@@ -40,8 +40,8 @@ export function Notice({
   title?: ReactNode;
   children?: ReactNode;
   actions?: ReactNode;
-  className?: string;
-  role?: "alert" | "status";
+  className?: string | undefined;
+  role?: "alert" | "status" | undefined;
 }) {
   const Icon = ICONS[tone ?? "info"];
   return (
@@ -63,9 +63,9 @@ export function ApiErrorNotice({
   className,
 }: {
   error: unknown;
-  onRetry?: () => void;
+  onRetry?: (() => void) | undefined;
   extraAction?: ReactNode;
-  className?: string;
+  className?: string | undefined;
 }) {
   const copy = describeApiError(error);
   return (

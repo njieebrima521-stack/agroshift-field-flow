@@ -43,22 +43,22 @@ export class ApiError extends Error {
     this.name = "ApiError";
     this.kind = kind;
     this.endpoint = endpoint;
-    this.status = extra?.status;
-    this.issues = extra?.issues;
+    if (extra?.status !== undefined) this.status = extra.status;
+    if (extra?.issues !== undefined) this.issues = extra.issues;
   }
 }
 
 const DEFAULT_TIMEOUT_MS = 45_000;
 
 function baseUrl(): string {
-  const configured = (import.meta.env.VITE_AGROSHIFT_API_BASE_URL as string | undefined) ?? "";
+  const configured = (import.meta.env["VITE_AGROSHIFT_API_BASE_URL"] as string | undefined) ?? "";
   return configured.replace(/\/+$/, "");
 }
 
 async function request<S extends z.ZodTypeAny>(
   endpoint: string,
   schema: S,
-  init: RequestInit & { signal?: AbortSignal; timeoutMs?: number } = {},
+  init: Omit<RequestInit, "signal"> & { signal?: AbortSignal | undefined; timeoutMs?: number } = {},
 ): Promise<z.infer<S>> {
   const controller = new AbortController();
   const timeoutMs = init.timeoutMs ?? DEFAULT_TIMEOUT_MS;
@@ -72,8 +72,9 @@ async function request<S extends z.ZodTypeAny>(
 
   let response: Response;
   try {
+    const { timeoutMs: _t, signal: _s, ...rest } = init;
     response = await fetch(`${baseUrl()}${endpoint}`, {
-      ...init,
+      ...rest,
       signal: controller.signal,
       headers: { Accept: "application/json", ...(init.headers ?? {}) },
     });
@@ -161,7 +162,7 @@ export function postStrategies(
   });
 }
 
-export type ErrorCopy = { title: string; detail: string; issues?: string[] };
+export type ErrorCopy = { title: string; detail: string; issues?: string[] | undefined };
 
 export function describeApiError(err: unknown): ErrorCopy {
   if (!(err instanceof ApiError)) {

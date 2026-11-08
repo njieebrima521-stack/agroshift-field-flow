@@ -87,7 +87,13 @@ export function seasonSecondName(s: SeasonEntry): string {
   return s.second === OTHER_CROP ? s.secondOther.trim() : s.second;
 }
 
-export type DetailErrors = Partial<Record<string, string>>;
+export type DetailErrors = {
+  fieldType?: string;
+  fieldName?: string;
+  intercropping?: string;
+  notes?: string;
+  [key: string]: string | undefined;
+};
 
 export function validateDetails(d: FieldDetails): DetailErrors {
   const errors: DetailErrors = {};

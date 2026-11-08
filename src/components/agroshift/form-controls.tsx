@@ -3,7 +3,7 @@ import type { ReactNode, SelectHTMLAttributes } from "react";
 
 import { cn } from "@/lib/utils";
 
-export function FieldLabel({ htmlFor, children, optional }: { htmlFor?: string; children: ReactNode; optional?: boolean }) {
+export function FieldLabel({ htmlFor, children, optional }: { htmlFor?: string | undefined; children: ReactNode; optional?: boolean | undefined }) {
   return (
     <label htmlFor={htmlFor} className="mb-1.5 block text-base font-medium text-foreground">
       {children}
@@ -12,7 +12,7 @@ export function FieldLabel({ htmlFor, children, optional }: { htmlFor?: string; 
   );
 }
 
-export function ErrorText({ id, children }: { id?: string; children?: ReactNode }) {
+export function ErrorText({ id, children }: { id?: string | undefined; children?: ReactNode }) {
   if (!children) return null;
   return (
     <p id={id} className="mt-1.5 text-sm font-medium text-destructive">
@@ -39,7 +39,7 @@ export function NativeSelect({ className, children, ...props }: SelectHTMLAttrib
   );
 }
 
-export type SegmentOption = { value: string; label: string; hint?: string };
+export type SegmentOption = { value: string; label: string; hint?: string | undefined };
 
 /** Accessible single-choice segmented control (radio group). */
 export function Segmented({
@@ -56,8 +56,8 @@ export function Segmented({
   options: SegmentOption[];
   value: string;
   onChange: (v: string) => void;
-  error?: string;
-  description?: string;
+  error?: string | undefined;
+  description?: string | undefined;
 }) {
   return (
     <fieldset aria-invalid={Boolean(error)} aria-describedby={error ? `${name}-error` : undefined}>

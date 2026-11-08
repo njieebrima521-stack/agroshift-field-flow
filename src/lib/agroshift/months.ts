@@ -30,7 +30,7 @@ export function toSegments(item: SequenceItem, zeroBased: boolean): MonthSegment
 export function monthRangeLabel(item: SequenceItem, zeroBased: boolean): string {
   const seg = toSegments(item, zeroBased);
   if (!seg) return `months ${item.month_start}–${item.month_end} (invalid range)`;
-  const first = seg[0].start;
-  const last = seg[seg.length - 1].end;
-  return first === last ? MONTHS[first] : `${MONTHS[first]}–${MONTHS[last]}`;
+  const first = seg[0]?.start ?? 0;
+  const last = seg[seg.length - 1]?.end ?? first;
+  return first === last ? (MONTHS[first] ?? "") : `${MONTHS[first] ?? ""}–${MONTHS[last] ?? ""}`;
 }

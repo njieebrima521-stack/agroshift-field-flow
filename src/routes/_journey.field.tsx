@@ -77,9 +77,10 @@ function ChooseField() {
     setFocus({ lat, lng, zoom: 16, key: Date.now() });
     setMarker({ lat, lng, label });
     const hits = mapFields.filter((m) => m.parsed.ok && pointInPolygons([lng, lat], m.parsed.polygons));
-    if (hits.length === 1) {
-      chooseField(hits[0].field);
-      setPointNote(`Field ${hits[0].field.field_id} is at this point and is now selected.`);
+    const only = hits.length === 1 ? hits[0] : undefined;
+    if (only) {
+      chooseField(only.field);
+      setPointNote(`Field ${only.field.field_id} is at this point and is now selected.`);
     } else if (hits.length > 1) {
       setPointNote(`${hits.length} registered fields overlap this point. Choose one from the list.`);
     } else {

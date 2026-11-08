@@ -53,12 +53,13 @@ function Landing() {
     setNoFields(false);
     try {
       const fields = await getFields();
-      if (fields.length === 0) {
+      const first = fields[0];
+      if (!first) {
         setNoFields(true);
         return;
       }
       // The example is the first field record returned by the backend.
-      selectField(fields[0]);
+      selectField(first);
       navigate({ to: "/field" });
     } catch (err) {
       setExampleError(err);
