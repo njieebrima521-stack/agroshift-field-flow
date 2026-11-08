@@ -87,12 +87,18 @@ export function seasonSecondName(s: SeasonEntry): string {
   return s.second === OTHER_CROP ? s.secondOther.trim() : s.second;
 }
 
-export type DetailErrors = Partial<Record<string, string>>;
+export type DetailErrors = {
+  fieldType?: string;
+  fieldName?: string;
+  intercropping?: string;
+  notes?: string;
+  [key: string]: string | undefined;
+};
 
 export function validateDetails(d: FieldDetails): DetailErrors {
   const errors: DetailErrors = {};
-  if (!d.fieldType) errors["fieldType"] = "Choose the type of land this field is on.";
-  if (d.fieldName.length > 80) errors["fieldName"] = "Keep the field name under 80 characters.";
+  if (!d.fieldType) errors.fieldType = "Choose the type of land this field is on.";
+  if (d.fieldName.length > 80) errors.fieldName = "Keep the field name under 80 characters.";
   d.seasons.forEach((s, i) => {
     if (!s.crop) errors[`season${i}`] = "Choose the main crop for this season, or “Fallow” / “Not sure”.";
     else if (s.crop === OTHER_CROP && !s.cropOther.trim()) errors[`season${i}`] = "Type the crop name.";
@@ -100,8 +106,8 @@ export function validateDetails(d: FieldDetails): DetailErrors {
     if (d.intercropping === "yes" && s.second === OTHER_CROP && !s.secondOther.trim())
       errors[`second${i}`] = "Type the second crop name.";
   });
-  if (!d.intercropping) errors["intercropping"] = "Tell us whether you grow two crops together.";
-  if (d.notes.length > 500) errors["notes"] = "Keep notes under 500 characters.";
+  if (!d.intercropping) errors.intercropping = "Tell us whether you grow two crops together.";
+  if (d.notes.length > 500) errors.notes = "Keep notes under 500 characters.";
   return errors;
 }
 

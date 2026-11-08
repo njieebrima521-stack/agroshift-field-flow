@@ -166,8 +166,8 @@ function Metric({
   value: number | null;
   render: (v: number) => string;
   provenance: Provenance | null;
-  note?: string;
-  compact?: boolean;
+  note?: string | undefined;
+  compact?: boolean | undefined;
 }) {
   if (value === null) return <Unavailable label={label} />;
   return (
@@ -180,7 +180,7 @@ function Metric({
   );
 }
 
-function Unavailable({ label, reason }: { label: string; reason?: string }) {
+function Unavailable({ label, reason }: { label: string; reason?: string | undefined }) {
   return (
     <div className="rounded-lg border border-dashed border-border bg-surface p-3">
       <p className="text-sm font-medium text-muted-foreground">{label}</p>
