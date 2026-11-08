@@ -129,10 +129,7 @@ function Runner() {
     }
   }, [update]);
 
-  const started = useRef(false);
   useEffect(() => {
-    if (started.current) return;
-    started.current = true;
     if (analysisIsCurrent) {
       setStages(INITIAL.map((s) => ({ ...s, status: "done" })));
       setComplete(true);
