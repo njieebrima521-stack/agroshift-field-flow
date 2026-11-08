@@ -47,12 +47,14 @@ export function SequenceBar({
   sequence,
   zeroBased,
   showLegend = true,
+  compact = false,
   className,
 }: {
   sequence: SequenceItem[];
   zeroBased: boolean;
   showLegend?: boolean;
-  className?: string;
+  compact?: boolean;
+  className?: string | undefined;
 }) {
   if (sequence.length === 0) {
     return <p className="text-base text-muted-foreground">No crop sequence was returned for this strategy.</p>;
@@ -92,8 +94,14 @@ export function SequenceBar({
         <div className="mt-1 grid grid-cols-12 text-center text-sm text-muted-foreground" aria-hidden>
           {MONTHS.map((m) => (
             <span key={m}>
-              <span className="sm:hidden">{m[0]}</span>
-              <span className="hidden sm:inline">{m}</span>
+              {compact ? (
+                m[0]
+              ) : (
+                <>
+                  <span className="sm:hidden print:hidden">{m[0]}</span>
+                  <span className="hidden sm:inline print:inline">{m}</span>
+                </>
+              )}
             </span>
           ))}
         </div>

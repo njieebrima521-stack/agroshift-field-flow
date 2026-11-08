@@ -102,7 +102,7 @@ function SessionFooter({ onDone }: { onDone?: () => void }) {
 export function AppShell({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false);
   return (
-    <div className="min-h-screen bg-background md:grid md:grid-cols-[16rem_minmax(0,1fr)]">
+    <div className="min-h-screen bg-background md:grid md:grid-cols-[16rem_minmax(0,1fr)] print:block">
       <aside className="no-print sticky top-0 hidden h-screen flex-col border-r border-sidebar-border bg-sidebar px-4 py-6 md:flex">
         <Link to="/" className="mb-8 px-2" aria-label="AgroShift home">
           <Logo />
@@ -134,7 +134,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         </Sheet>
       </header>
 
-      <main className="min-w-0 px-4 pb-10 pt-6 sm:px-8 md:pt-10 lg:px-12">{children}</main>
+      <main className="min-w-0 px-4 pb-10 pt-6 sm:px-8 md:pt-10 lg:px-12 print:p-0">{children}</main>
     </div>
   );
 }
