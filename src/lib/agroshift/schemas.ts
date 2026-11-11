@@ -47,6 +47,14 @@ export const provenanceSchema = z.object({
   resolution_m: nullableNumber,
   period: nullableString,
   type: z.string(),
+  /* v1.1 optional additions — absent means "not stated", never a default. */
+  unit: nullableString,
+  source_series: nullableString,
+  distance_km: nullableNumber,
+  depth: nullableString,
+  quantile: nullableString,
+  coverage_pct: nullableNumber,
+  notes: nullableString,
 });
 export type Provenance = z.infer<typeof provenanceSchema>;
 
@@ -64,6 +72,8 @@ const ndviPointSchema = z.union([
       date: z.string().optional(),
       month: z.union([z.string(), z.number()]).optional(),
       period: z.string().optional(),
+      quality_label: z.string().nullable().optional(),
+      usable: z.boolean().nullable().optional(),
     })
     .passthrough(),
 ]);
@@ -73,6 +83,7 @@ export const soilSchema = z.object({
   ph: nullableNumber,
   soc_g_kg: nullableNumber,
   source: nullableString,
+  depth: nullableString,
 });
 
 export const featuresResponseSchema = z.object({
@@ -95,6 +106,10 @@ export const featuresResponseSchema = z.object({
     .nullable()
     .optional()
     .transform((v) => (v === undefined ? null : v)),
+  /* v1.1 optional additions */
+  elevation_m: nullableNumber,
+  /** Date the backend's preprocessed data files were prepared (data is not fetched live). */
+  data_snapshot: nullableString,
 });
 export type Features = z.infer<typeof featuresResponseSchema>;
 
@@ -105,7 +120,9 @@ export function normaliseNdviCurve(curve: Features["ndvi_curve"]): NdviPoint[] |
   return curve.map((p, i) => {
     if (p === null) return { label: null, value: null };
     if (typeof p === "number") return { label: null, value: p };
-    const value = typeof p.value === "number" ? p.value : typeof p.ndvi === "number" ? p.ndvi : null;
+    // A point the backend marks as unusable (cloud, poor quality) is a gap, not a value.
+    const reported = typeof p.value === "number" ? p.value : typeof p.ndvi === "number" ? p.ndvi : null;
+    const value = p.usable === false ? null : reported;
     const label =
       p.date ?? (p.month !== undefined ? String(p.month) : undefined) ?? p.period ?? null;
     return { label: label ?? `#${i + 1}`, value };
@@ -142,6 +159,14 @@ export const evidenceSchema = z.object({
 });
 export type EvidenceItem = z.infer<typeof evidenceSchema>;
 
+/** v1.1: result of each hard-limit check, run by the backend before any scoring. */
+export const constraintCheckSchema = z.object({
+  constraint: z.string(),
+  passed: z.boolean().nullable(),
+  reason: nullableString,
+});
+export type ConstraintCheck = z.infer<typeof constraintCheckSchema>;
+
 export const strategySchema = z.object({
   id,
   rank: nullableNumber,
@@ -167,11 +192,19 @@ export const strategySchema = z.object({
     .optional()
     .transform((v) => (v === undefined ? null : v)),
   confidence: nullableNumber,
+  constraint_checks: z
+    .array(constraintCheckSchema)
+    .nullable()
+    .optional()
+    .transform((v) => (v === undefined ? null : v)),
 });
 export type Strategy = z.infer<typeof strategySchema>;
 
 export const strategiesResponseSchema = z.object({
   strategies: z.array(strategySchema),
+  /* v1.1 optional additions */
+  confidence_scale_max: nullableNumber,
+  engine_version: nullableString,
 });
 export type StrategiesResponse = z.infer<typeof strategiesResponseSchema>;
 
@@ -180,8 +213,23 @@ export type StrategiesResponse = z.infer<typeof strategiesResponseSchema>;
 export type PriorityKey = "water" | "soil" | "income" | "food" | "resilience";
 export type Priorities = Record<PriorityKey, number>;
 
+export type SeasonStatus = "crop" | "fallow" | "unknown";
+
+/** v1.1: the farmer's S2 answers. Unanswered optional items are null, never guessed. */
+export type FieldDetailsPayload = {
+  field_name: string | null;
+  field_type: string;
+  seasons: Array<{ year: number; status: SeasonStatus; main_crop: string | null; second_crop: string | null }>;
+  intercropping: boolean;
+  soil_texture: string | null;
+  drainage: string | null;
+  erosion: string | null;
+  notes: string | null;
+};
+
 export type StrategyRequest = {
   field_id: string;
+  field_details: FieldDetailsPayload;
   priorities: Priorities;
   constraints: {
     water_source: string;

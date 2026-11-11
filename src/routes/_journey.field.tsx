@@ -388,9 +388,11 @@ function ChooseField() {
                 <dd>{selected.area_ha !== null ? `${formatHa(selected.area_ha)} ha` : "Not recorded"}</dd>
                 <dt className="text-muted-foreground">Area (from boundary)</dt>
                 <dd>
-                  {selectedParsed?.ok
+                  {selectedParsed?.ok && selectedParsed.polygons.length > 0
                     ? `${formatHa(polygonsAreaHa(selectedParsed.polygons))} ha`
-                    : `Not available — ${selectedParsed && !selectedParsed.ok ? selectedParsed.reason.toLowerCase() : "no boundary"}`}
+                    : selectedParsed?.ok
+                      ? "Not available — the service gave a location point, not a boundary"
+                      : `Not available — ${selectedParsed && !selectedParsed.ok ? selectedParsed.reason.toLowerCase() : "no boundary"}`}
                 </dd>
               </dl>
             ) : (

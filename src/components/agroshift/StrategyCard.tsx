@@ -4,6 +4,7 @@ import { ArrowDown, ArrowRight, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { monthRangeLabel } from "@/lib/agroshift/months";
 import { isLowConfidence, type LabelledStrategy } from "@/lib/agroshift/strategies";
+import { useSession } from "@/lib/agroshift/session";
 import { cn } from "@/lib/utils";
 
 import { SequenceBar } from "./SequenceBar";
@@ -17,6 +18,8 @@ export function strategyHeaderClass(l: LabelledStrategy): string {
 }
 
 export function ConfidenceBadge({ value }: { value: number | null }) {
+  const { state } = useSession();
+  const max = state.analysis?.strategies.confidence_scale_max ?? null;
   if (value === null) {
     return <span className="text-sm font-medium text-warning-foreground">Confidence not supplied</span>;
   }
@@ -29,6 +32,7 @@ export function ConfidenceBadge({ value }: { value: number | null }) {
       )}
     >
       Confidence {Number.isInteger(value) ? value : value.toFixed(1)}
+      {max !== null && ` of ${max}`}
       {low && <span className="font-normal">· low</span>}
     </span>
   );

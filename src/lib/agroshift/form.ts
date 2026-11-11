@@ -1,7 +1,7 @@
-import { OTHER_CROP } from "./crops";
+import { FALLOW, OTHER_CROP, UNKNOWN_CROP } from "./crops";
 import type { LngLat } from "./geo";
 import { normalisePriorities } from "./priorities";
-import type { Features, Field, Priorities, StrategiesResponse, StrategyRequest } from "./schemas";
+import type { Features, Field, FieldDetailsPayload, Priorities, StrategiesResponse, StrategyRequest } from "./schemas";
 
 export type SeasonEntry = { year: number; crop: string; cropOther: string; second: string; secondOther: string };
 
@@ -131,20 +131,57 @@ export function validateConstraints(c: Constraints): ConstraintErrors {
   return e;
 }
 
-export type BuildResult = { ok: true; request: StrategyRequest; key: string } | { ok: false; errors: string[] };
+export type BuildResult =
+  | { ok: true; request: StrategyRequest; key: string }
+  | { ok: false; errors: string[]; fix: "/field" | "/details" | "/priorities" };
 
-/** Build the documented POST /api/strategies body from the farmer's actual inputs. */
-export function buildStrategyRequest(state: Pick<SessionState, "field" | "priorities" | "constraints">): BuildResult {
+const orNull = (v: string) => (v.trim() ? v.trim() : null);
+
+/** Turn the S2 answers into the documented `field_details` block. Nothing is inferred. */
+export function buildFieldDetails(d: FieldDetails): FieldDetailsPayload {
+  const intercropping = d.intercropping === "yes";
+  return {
+    field_name: orNull(d.fieldName),
+    field_type: d.fieldType,
+    seasons: d.seasons.map((s) => {
+      const status = s.crop === FALLOW ? "fallow" : s.crop === UNKNOWN_CROP ? "unknown" : "crop";
+      const second = intercropping ? seasonSecondName(s) : "";
+      return {
+        year: s.year,
+        status,
+        main_crop: status === "crop" ? orNull(seasonCropName(s)) : null,
+        second_crop: second && second !== FALLOW && second !== UNKNOWN_CROP ? second : null,
+      };
+    }),
+    intercropping,
+    soil_texture: orNull(d.soilTexture),
+    drainage: orNull(d.drainage),
+    erosion: orNull(d.erosion),
+    notes: orNull(d.notes),
+  };
+}
+
+/** Build the documented POST /api/strategies body from the farmer's actual inputs (S1–S3). */
+export function buildStrategyRequest(
+  state: Pick<SessionState, "field" | "details" | "priorities" | "constraints">,
+): BuildResult {
+  if (!state.field) return { ok: false, errors: ["No registered field is selected."], fix: "/field" };
+
+  const detailErrors = Object.values(validateDetails(state.details)).filter((v): v is string => Boolean(v));
+  if (detailErrors.length) {
+    return { ok: false, errors: ["Field details and crop history are incomplete.", ...Array.from(new Set(detailErrors))], fix: "/details" };
+  }
+
   const errors: string[] = [];
-  if (!state.field) errors.push("No registered field is selected.");
   const priorities = normalisePriorities(state.priorities);
   if (!priorities) errors.push("At least one priority must be above 0%.");
   const cErr = validateConstraints(state.constraints);
   errors.push(...Object.values(cErr).filter((v): v is string => Boolean(v)));
-  if (errors.length || !state.field || !priorities) return { ok: false, errors };
+  if (errors.length || !priorities) return { ok: false, errors, fix: "/priorities" };
 
   const request: StrategyRequest = {
     field_id: state.field.field_id,
+    field_details: buildFieldDetails(state.details),
     priorities,
     constraints: {
       water_source: state.constraints.water_source,

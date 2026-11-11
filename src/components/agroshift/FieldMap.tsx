@@ -73,7 +73,7 @@ export default function FieldMap(props: FieldMapProps) {
     };
   }, []);
 
-  // Field boundaries.
+  // Field boundaries (or location points when the service has no boundary).
   useEffect(() => {
     const map = mapRef.current;
     const layer = fieldsLayer.current;
@@ -82,34 +82,52 @@ export default function FieldMap(props: FieldMapProps) {
     const primary = cssVar("--primary", "#0b6b3a");
     const highlight = cssVar("--highlight", "#f28c1b");
     const bounds = L.latLngBounds([]);
+    let selectedBounds: L.LatLngBounds | null = null;
     for (const { field, parsed } of props.fields) {
       if (!parsed.ok) continue;
       const selected = field.field_id === props.selectedId;
-      const latlngs = parsed.polygons.map((rings) => rings.map((ring) => ring.map(([lng, lat]) => [lat, lng] as L.LatLngTuple)));
-      const poly = L.polygon(latlngs, {
-        color: selected ? highlight : primary,
-        weight: selected ? 4 : 2,
-        fillColor: primary,
-        fillOpacity: selected ? 0.35 : 0.15,
-      });
-      poly.bindTooltip(`Field ${field.field_id}${field.community ? ` · ${field.community}` : ""}`);
-      poly.on("click", (e) => {
+      const tooltip = `Field ${field.field_id}${field.community ? ` · ${field.community}` : ""}`;
+      const onClick = (e: L.LeafletMouseEvent) => {
         if (propsRef.current.drawMode) return;
         L.DomEvent.stopPropagation(e);
         propsRef.current.onSelectField(field.field_id);
-      });
-      poly.addTo(layer);
-      bounds.extend(poly.getBounds());
-      if (selected && fittedRef.current) map.fitBounds(poly.getBounds(), { maxZoom: 17, padding: [40, 40] });
-    }
-    if (!fittedRef.current && bounds.isValid()) {
-      const sel = props.fields.find((f) => f.field.field_id === props.selectedId);
-      if (sel?.parsed.ok) {
-        const b = L.latLngBounds(sel.parsed.polygons.flatMap((r) => (r[0] ?? []).map(([lng, lat]) => [lat, lng] as L.LatLngTuple)));
-        map.fitBounds(b, { maxZoom: 17, padding: [40, 40] });
+      };
+      let shapeBounds: L.LatLngBounds;
+      if (parsed.polygons.length > 0) {
+        const latlngs = parsed.polygons.map((rings) => rings.map((ring) => ring.map(([lng, lat]) => [lat, lng] as L.LatLngTuple)));
+        const poly = L.polygon(latlngs, {
+          color: selected ? highlight : primary,
+          weight: selected ? 4 : 2,
+          fillColor: primary,
+          fillOpacity: selected ? 0.35 : 0.15,
+        });
+        poly.bindTooltip(tooltip);
+        poly.on("click", onClick);
+        poly.addTo(layer);
+        shapeBounds = poly.getBounds();
+      } else if (parsed.point) {
+        const [lng, lat] = parsed.point;
+        const dot = L.circleMarker([lat, lng], {
+          radius: selected ? 11 : 9,
+          color: selected ? highlight : primary,
+          weight: selected ? 4 : 3,
+          fillColor: primary,
+          fillOpacity: 0.5,
+        });
+        dot.bindTooltip(`${tooltip} (location only, no boundary)`);
+        dot.on("click", onClick);
+        dot.addTo(layer);
+        shapeBounds = L.latLngBounds([[lat, lng]]);
       } else {
-        map.fitBounds(bounds, { maxZoom: 15, padding: [30, 30] });
+        continue;
       }
+      bounds.extend(shapeBounds);
+      if (selected) selectedBounds = shapeBounds;
+    }
+    if (selectedBounds && fittedRef.current) map.fitBounds(selectedBounds, { maxZoom: 17, padding: [40, 40] });
+    if (!fittedRef.current && bounds.isValid()) {
+      if (selectedBounds) map.fitBounds(selectedBounds, { maxZoom: 17, padding: [40, 40] });
+      else map.fitBounds(bounds, { maxZoom: 15, padding: [30, 30] });
       fittedRef.current = true;
     }
   }, [props.fields, props.selectedId]);

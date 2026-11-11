@@ -49,8 +49,15 @@ function EvidenceBody() {
   const ndviValues = ndvi?.map((p) => p.value).filter((v): v is number => v !== null) ?? [];
   const soil = f.soil;
 
+  const smapUnit = prov("smap_departure")?.unit ?? null;
+
   return (
     <div className="space-y-6">
+      {f.data_snapshot && (
+        <Notice tone="info" title={`Prepared data, ${f.data_snapshot}`}>
+          These values come from satellite and model files prepared in advance for this field. They were not fetched live.
+        </Notice>
+      )}
       <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
         <EvidenceCard icon={Droplets} iconClass="text-info" title="Rainfall">
           <Metric
@@ -72,8 +79,8 @@ function EvidenceBody() {
           <Metric
             label="Departure from normal"
             value={f.smap_departure}
-            render={(v) => `${v > 0 ? "+" : ""}${fmt(v, 3)}`}
-            note="Unit not stated by the service."
+            render={(v) => `${v > 0 ? "+" : ""}${fmt(v, 3)}${smapUnit ? ` ${smapUnit}` : ""}`}
+            note={smapUnit ? undefined : "Unit not stated by the service."}
             provenance={prov("smap_departure")}
           />
           {f.smap_departure !== null && (
@@ -107,13 +114,23 @@ function EvidenceBody() {
               <Metric label="pH" value={soil.ph} render={(v) => fmt(v, 1)} provenance={prov("soil")} compact />
               <Metric label="Soil organic carbon" value={soil.soc_g_kg} render={(v) => `${fmt(v, 1)} g/kg`} provenance={prov("soil")} compact />
               <ProvenanceTag provenance={prov("soil")} />
-              <p className="text-sm text-muted-foreground">Source given: {soil.source ?? "not stated"}</p>
+              <p className="text-sm text-muted-foreground">
+                Source given: {soil.source ?? "not stated"}
+                {soil.depth && ` · depth ${soil.depth}`}
+              </p>
               {(isModelled(prov("soil")) || !prov("soil")) && (
                 <p className="text-sm font-medium text-highlight-text">Mapped prediction — not a laboratory test of your soil.</p>
               )}
             </>
           ) : (
             <Unavailable label="Soil properties" />
+          )}
+          {f.elevation_m !== null && (
+            <div className="space-y-1.5 border-t border-border pt-3">
+              <p className="text-sm font-medium text-muted-foreground">Elevation (satellite estimate)</p>
+              <p className="text-xl font-bold">{fmt(f.elevation_m)} m</p>
+              <ProvenanceTag provenance={prov("elevation_m")} />
+            </div>
           )}
           <Plain>Clay holds water and nutrients; pH shows how acid the soil is; organic carbon reflects soil life and fertility.</Plain>
         </EvidenceCard>
@@ -214,6 +231,10 @@ function GapsPanel({ features: f }: { features: Features }) {
     else if (p.resolution_m !== null && p.resolution_m >= 1000)
       gaps.push(`${label} (${p.dataset}) uses a ${formatResolution(p.resolution_m)} — it describes the wider area, not inside your field.`);
     if (p && isModelled(p)) gaps.push(`${label} (${p.dataset}) is ${p.type}, not measured on your field.`);
+    if (p && p.distance_km !== null && p.distance_km >= 1)
+      gaps.push(`${label} (${p.dataset}) comes from the nearest grid cell, ${fmt(p.distance_km, 1)} km from the field.`);
+    if (p && p.coverage_pct !== null && p.coverage_pct < 100)
+      gaps.push(`${label} (${p.dataset}): only ${fmt(p.coverage_pct, 1)}% of observations were usable; the rest are left as gaps.`);
   }
   const fromAnalysis = Array.from(new Set(state.analysis?.strategies.strategies.flatMap((s) => s.gaps ?? []) ?? []));
 
@@ -257,14 +278,15 @@ function SourcesTable({ provenance }: { provenance: Provenance[] | null }) {
         </Notice>
       ) : (
         <div className="mt-3 overflow-x-auto">
-          <table className="w-full min-w-[36rem] text-left text-base">
+          <table className="w-full min-w-[44rem] text-left text-base">
             <thead>
               <tr className="border-b border-border text-sm text-muted-foreground">
                 <th className="py-2 pr-4 font-semibold">Dataset</th>
                 <th className="py-2 pr-4 font-semibold">Variable</th>
                 <th className="py-2 pr-4 font-semibold">Resolution</th>
                 <th className="py-2 pr-4 font-semibold">Period</th>
-                <th className="py-2 font-semibold">Type</th>
+                <th className="py-2 pr-4 font-semibold">Type</th>
+                <th className="py-2 font-semibold">Unit & notes</th>
               </tr>
             </thead>
             <tbody>
@@ -274,7 +296,12 @@ function SourcesTable({ provenance }: { provenance: Provenance[] | null }) {
                   <td className="py-2.5 pr-4">{p.variable}</td>
                   <td className="py-2.5 pr-4">{formatResolution(p.resolution_m)}</td>
                   <td className="py-2.5 pr-4">{p.period ?? "not stated"}</td>
-                  <td className="py-2.5">{p.type}</td>
+                  <td className="py-2.5 pr-4">{p.type}</td>
+                  <td className="py-2.5 text-sm">
+                    {[p.unit, p.source_series, p.depth && `depth ${p.depth}`, p.quantile && `quantile ${p.quantile}`, p.notes]
+                      .filter(Boolean)
+                      .join(" · ") || "—"}
+                  </td>
                 </tr>
               ))}
             </tbody>
