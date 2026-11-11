@@ -6,7 +6,8 @@ export type FeatureMetric =
   | "hot_days_35"
   | "smap_departure"
   | "ndvi_curve"
-  | "soil";
+  | "soil"
+  | "elevation_m";
 
 /**
  * Provenance entries are matched to displayed values by their `variable` name.
@@ -19,6 +20,7 @@ const ALIASES: Record<FeatureMetric, string[]> = {
   smap_departure: ["smap_departure", "soil_moisture_departure", "soil_moisture", "smap", "sm_anomaly"],
   ndvi_curve: ["ndvi_curve", "ndvi"],
   soil: ["soil", "clay_pct", "ph", "soc_g_kg", "soil_properties"],
+  elevation_m: ["elevation_m", "elevation", "srtm", "dem"],
 };
 
 const norm = (s: string) => s.trim().toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, "");

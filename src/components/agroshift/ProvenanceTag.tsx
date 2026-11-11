@@ -22,6 +22,20 @@ export function ProvenanceTag({ provenance, className }: { provenance: Provenanc
       </span>
       <span className="rounded-md bg-muted px-2 py-0.5 text-muted-foreground">{formatResolution(provenance.resolution_m)}</span>
       <span className="rounded-md bg-muted px-2 py-0.5 text-muted-foreground">{provenance.period ?? "period not stated"}</span>
+      {provenance.source_series && (
+        <span className="rounded-md bg-muted px-2 py-0.5 text-muted-foreground">{provenance.source_series}</span>
+      )}
+      {provenance.depth && <span className="rounded-md bg-muted px-2 py-0.5 text-muted-foreground">depth {provenance.depth}</span>}
+      {provenance.distance_km !== null && (
+        <span className="rounded-md bg-muted px-2 py-0.5 text-muted-foreground">
+          nearest cell {provenance.distance_km.toLocaleString("en-GB", { maximumFractionDigits: 1 })} km away
+        </span>
+      )}
+      {provenance.coverage_pct !== null && (
+        <span className="rounded-md bg-muted px-2 py-0.5 text-muted-foreground">
+          {provenance.coverage_pct.toLocaleString("en-GB", { maximumFractionDigits: 1 })}% usable
+        </span>
+      )}
       <span
         className={cn(
           "rounded-md border px-2 py-0.5 font-semibold",
@@ -30,6 +44,7 @@ export function ProvenanceTag({ provenance, className }: { provenance: Provenanc
       >
         {modelled ? (provenance.type.toLowerCase() === "modelled" ? "Modelled" : `Modelled (${provenance.type})`) : "Observed"}
       </span>
+      {provenance.notes && <p className="basis-full text-sm text-muted-foreground">{provenance.notes}</p>}
     </div>
   );
 }

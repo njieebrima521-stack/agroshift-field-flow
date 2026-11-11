@@ -169,7 +169,7 @@ export function buildStrategyRequest(
 
   const detailErrors = Object.values(validateDetails(state.details)).filter((v): v is string => Boolean(v));
   if (detailErrors.length) {
-    return { ok: false, errors: ["Field details and crop history are incomplete.", ...new Set(detailErrors)], fix: "/details" };
+    return { ok: false, errors: ["Field details and crop history are incomplete.", ...Array.from(new Set(detailErrors))], fix: "/details" };
   }
 
   const errors: string[] = [];
