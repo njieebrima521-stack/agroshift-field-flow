@@ -106,7 +106,12 @@ function Runner() {
       setStage("soil", hasSoil ? "done" : "partial", hasSoil ? undefined : "Soil information is not available for this field.");
 
       setStage("inputs", "running");
-      setStage("inputs", "done");
+      const sent = req.request.field_details.seasons;
+      setStage(
+        "inputs",
+        "done",
+        `Sending ${sent.length} seasons of crop history (${sent.map((s) => s.year).join(", ")}), your field details, priorities and 4 limits.`,
+      );
 
       setStage("strategies", "running");
       const strategies = await postStrategies(req.request, signal);
@@ -148,7 +153,9 @@ function Runner() {
         title="Some answers are needed before the analysis can run"
         actions={
           <Button asChild>
-            <Link to="/priorities">Go to priorities & limits</Link>
+            <Link to={built.fix}>
+              {built.fix === "/details" ? "Go to field details" : built.fix === "/field" ? "Choose a field" : "Go to priorities & limits"}
+            </Link>
           </Button>
         }
       >
