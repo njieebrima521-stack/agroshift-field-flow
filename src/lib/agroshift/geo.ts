@@ -4,8 +4,12 @@ export type LngLat = [number, number];
 export type Ring = LngLat[];
 export type PolygonRings = Ring[]; // [outer, ...holes]
 
+/**
+ * A registered field has either a boundary (polygons) or, when the backend only knows
+ * a location, a single point. A point has no area.
+ */
 export type ParsedGeometry =
-  | { ok: true; polygons: PolygonRings[] }
+  | { ok: true; polygons: PolygonRings[]; point: LngLat | null }
   | { ok: false; reason: string };
 
 function isPosition(p: unknown): p is LngLat {
@@ -35,7 +39,7 @@ export function parseGeometry(geometry: unknown): ParsedGeometry {
   const g = geometry as { type?: unknown; coordinates?: unknown };
   if (g.type === "Polygon") {
     const rings = parseRings(g.coordinates);
-    return rings ? { ok: true, polygons: [rings] } : { ok: false, reason: "Polygon coordinates are invalid" };
+    return rings ? { ok: true, polygons: [rings], point: null } : { ok: false, reason: "Polygon coordinates are invalid" };
   }
   if (g.type === "MultiPolygon") {
     if (!Array.isArray(g.coordinates) || g.coordinates.length === 0)
@@ -46,7 +50,12 @@ export function parseGeometry(geometry: unknown): ParsedGeometry {
       if (!rings) return { ok: false, reason: "MultiPolygon coordinates are invalid" };
       polys.push(rings);
     }
-    return { ok: true, polygons: polys };
+    return { ok: true, polygons: polys, point: null };
+  }
+  if (g.type === "Point") {
+    return isPosition(g.coordinates)
+      ? { ok: true, polygons: [], point: [g.coordinates[0], g.coordinates[1]] }
+      : { ok: false, reason: "Point coordinates are invalid" };
   }
   return { ok: false, reason: `Unsupported geometry type: ${String(g.type ?? "none")}` };
 }
