@@ -4,6 +4,7 @@ import { ArrowDown, ArrowRight, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { monthRangeLabel } from "@/lib/agroshift/months";
 import { isLowConfidence, type LabelledStrategy } from "@/lib/agroshift/strategies";
+import { useSession } from "@/lib/agroshift/session";
 import { cn } from "@/lib/utils";
 
 import { SequenceBar } from "./SequenceBar";
