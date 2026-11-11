@@ -1,5 +1,5 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
-import { AlertTriangle, ArrowLeft, ArrowRight, Lock } from "lucide-react";
+import { AlertTriangle, ArrowLeft, ArrowRight, CheckCircle2, CircleHelp, Lock, XCircle } from "lucide-react";
 import type { ReactNode } from "react";
 
 import { PageHeader, StepNav } from "@/components/agroshift/AppShell";
@@ -123,6 +123,29 @@ function StrategyBody() {
             <Notice tone="blocked" className="mt-3" title="Blocked by your limits">
               {s.blocked_reason ?? "The analysis marked this option as blocked but did not give a reason."}
             </Notice>
+          )}
+          {s.constraint_checks && s.constraint_checks.length > 0 && (
+            <div className="mt-3 rounded-lg border border-border p-3">
+              <p className="text-base font-semibold">Your limits, checked before any scoring</p>
+              <ul className="mt-2 space-y-1.5">
+                {s.constraint_checks.map((c, i) => (
+                  <li key={`${c.constraint}-${i}`} className="flex gap-2 text-base">
+                    {c.passed === true ? (
+                      <CheckCircle2 className="mt-0.5 size-5 shrink-0 text-primary" aria-label="Passed" />
+                    ) : c.passed === false ? (
+                      <XCircle className="mt-0.5 size-5 shrink-0 text-blocked" aria-label="Not met" />
+                    ) : (
+                      <CircleHelp className="mt-0.5 size-5 shrink-0 text-warning-foreground" aria-label="Not checked" />
+                    )}
+                    <span>
+                      <span className="font-medium">{c.constraint.replace(/_/g, " ")}</span>
+                      {" — "}
+                      {c.reason ?? (c.passed === true ? "met" : c.passed === false ? "not met (no reason given)" : "could not be checked")}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
           )}
         </header>
 
