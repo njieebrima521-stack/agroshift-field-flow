@@ -19,4 +19,6 @@
 - Journey screens are children of the pathless `_journey` layout (sidebar shell); the landing page `/` sits outside it.
 - Leaflet is loaded only via `React.lazy` inside `<ClientOnly>` and its wrapper uses `isolate`; jsPDF is dynamically imported on click. Why: SSR safety and small initial bundle.
 - Months in sequences are assumed 1–12; a response containing 0 and no 12 is treated as 0–11 (`months.ts`). Comparison rows map backend criterion names through the explicit list in `criteria.ts` only.
+- The API contract lives in `docs/api-contract.md` (v1.1); new response fields are optional so older responses still validate, and `field_details` (S2 answers) is always sent in POST /api/strategies. Why: backend is FastAPI hosted separately and evolves independently.
+- Registered fields may be Polygon, MultiPolygon or Point geometry; a Point has no area. Why: pilot data has a location but not always a boundary.
 - Rule tests live in `src/lib/agroshift/agroshift-rules.test.ts`; run `bunx vitest run` after changing these rules.
