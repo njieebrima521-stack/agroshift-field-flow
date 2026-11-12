@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 
 import { findDisplayCriterion, mapBreakdown } from "./criteria";
-import { buildStrategyRequest, recentSeasonYears } from "./form";
+import { buildStrategyRequest, emptyDetails, recentSeasonYears, type FieldDetails } from "./form";
+import { parseGeometry } from "./geo";
+import { normaliseNdviCurve } from "./schemas";
 import { closeRing, polygonsAreaHa, ringAreaM2 } from "./geo";
 import { detectZeroBased, toSegments } from "./months";
 import { normalisePriorities, priorityTotal } from "./priorities";
@@ -40,9 +42,21 @@ describe("priority normalisation", () => {
 
 describe("strategy request", () => {
   const field = { field_id: "F-12", farmer_code: null, community: null, ecotype: null, area_ha: null };
+  const base = emptyDetails(new Date(2026, 10, 5));
+  const details: FieldDetails = {
+    ...base,
+    fieldType: "upland",
+    intercropping: "no",
+    seasons: [
+      { ...base.seasons[0], crop: "Groundnut" },
+      { ...base.seasons[1], crop: "Fallow (no crop)" },
+      { ...base.seasons[2], crop: "Early millet (souna)" },
+    ],
+  };
   it("sends the selected field id, normalised priorities and the chosen limits", () => {
     const r = buildStrategyRequest({
       field,
+      details,
       priorities: { water: 40, soil: 40, income: 40, food: 40, resilience: 40 },
       constraints: { water_source: "rainfed", seed_available: ["Groundnut"], labour: "low", budget: "medium" },
     });
@@ -56,6 +70,7 @@ describe("strategy request", () => {
   it("is not built when a hard limit is missing", () => {
     const r = buildStrategyRequest({
       field,
+      details,
       priorities: { water: 20, soil: 20, income: 20, food: 20, resilience: 20 },
       constraints: { water_source: "", seed_available: ["Groundnut"], labour: "low", budget: "low" },
     });
@@ -63,7 +78,40 @@ describe("strategy request", () => {
   });
 });
 
+describe("crop history in the request", () => {
+  const field = { field_id: "F-1", farmer_code: null, community: null, ecotype: null, area_ha: null };
+  const base = emptyDetails(new Date(2026, 10, 5));
+  const limits = { water_source: "rainfed", seed_available: ["Groundnut"], labour: "low", budget: "low" };
+  const pr = { water: 20, soil: 20, income: 20, food: 20, resilience: 20 };
+  it("sends all three seasons, with fallow as a status and no invented crop", () => {
+    const details: FieldDetails = { ...base, fieldType: "upland", intercropping: "no", seasons: [
+      { ...base.seasons[0], crop: "Groundnut" }, { ...base.seasons[1], crop: "Fallow (no crop)" }, { ...base.seasons[2], crop: "Not sure" } ] };
+    const r = buildStrategyRequest({ field, details, priorities: pr, constraints: limits });
+    expect(r.ok).toBe(true);
+    if (r.ok) {
+      expect(r.request.field_details.seasons).toEqual([
+        { year: 2024, status: "crop", main_crop: "Groundnut", second_crop: null },
+        { year: 2025, status: "fallow", main_crop: null, second_crop: null },
+        { year: 2026, status: "unknown", main_crop: null, second_crop: null },
+      ]);
+      expect(r.request.field_details.soil_texture).toBeNull();
+    }
+  });
+  it("is not built, and points to field details, when crop history is missing", () => {
+    const r = buildStrategyRequest({ field, details: base, priorities: pr, constraints: limits });
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.fix).toBe("/details");
+  });
+});
+
 describe("missing data is never zero", () => {
+  it("treats an NDVI point marked unusable as a gap", () => {
+    expect(normaliseNdviCurve([{ date: "2026-08-01", ndvi: 0.5, usable: false }])?.[0]?.value).toBeNull();
+  });
+  it("accepts a location-only field with no area", () => {
+    const g = parseGeometry({ type: "Point", coordinates: [-16.615, 13.249] });
+    expect(g.ok && g.polygons.length === 0 && g.point).toEqual([-16.615, 13.249]);
+  });
   it("keeps absent feature values as null", () => {
     const f = featuresResponseSchema.parse({ field_id: "F-1", provenance: [] });
     expect(f.rainfall_total_mm).toBeNull();
